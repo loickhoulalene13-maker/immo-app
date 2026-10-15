@@ -9,7 +9,8 @@ type Alerte = { id: string; niveau: "info" | "warn" | "crit"; module: string; ti
 type Tache = { id: string; titre: string; detail: string | null; priorite: number; faite_le: string | null; bien_id: string | null; contact_id: string | null; transaction_id: string | null };
 type Visite = { id: string; date_visite: string; bien: { id: string; reference: string; type: string; pieces: number; ville: string } | null; acheteur: { nom: string } | null };
 
-export default async function TableauDeBord() {
+export default async function TableauDeBord({ searchParams }: { searchParams: Promise<{ ok?: string; erreur?: string }> }) {
+  const { ok, erreur } = await searchParams;
   const agence = await getAgence();
   if (!agence) redirect("/login");
   const supabase = await createClient();
@@ -38,6 +39,9 @@ export default async function TableauDeBord() {
         </div>
         <form action={recalculerAlertes}><button className="btn" type="submit">Recalculer les alertes</button></form>
       </header>
+
+      {ok === "mdp" && <p className="notice ok">Mot de passe modifié.</p>}
+      {erreur && <p className="notice crit">{erreur}</p>}
 
       <section className="kpis">
         <Link className="kpi" href="/biens"><span className="v">{kpi?.biens_en_vente ?? 0}</span><span className="l">Biens en vente · {eur(kpi?.volume_en_vente)}</span></Link>

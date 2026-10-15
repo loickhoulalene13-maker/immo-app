@@ -28,15 +28,21 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  const isLogin = request.nextUrl.pathname.startsWith("/login");
-  if (!user && !isLogin) {
+  // Pages accessibles sans être connecté
+  const chemin = request.nextUrl.pathname;
+  const publique = ["/login", "/mot-de-passe-oublie", "/inscription"].includes(chemin) || chemin.startsWith("/auth/");
+  const pourVisiteurs = chemin === "/login" || chemin === "/inscription" || chemin === "/mot-de-passe-oublie";
+
+  if (!user && !publique) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
+    url.search = "";
     return NextResponse.redirect(url);
   }
-  if (user && isLogin) {
+  if (user && pourVisiteurs) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
+    url.search = "";
     return NextResponse.redirect(url);
   }
   return response;

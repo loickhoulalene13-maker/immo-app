@@ -12,13 +12,21 @@ export const getAgence = cache(async (): Promise<Agence | null> => {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data } = await supabase
-    .from("membres")
-    .select("agence_id, role, nom_affiche, agences(nom)")
-    .eq("user_id", user.id)
-    .order("created_at")
-    .limit(1)
-    .maybeSingle();
+  const lire = () =>
+    supabase
+      .from("membres")
+      .select("agence_id, role, nom_affiche, agences(nom)")
+      .eq("user_id", user.id)
+      .order("created_at")
+      .limit(1)
+      .maybeSingle();
+
+  let { data } = await lire();
+  // Pas encore membre : on accepte les invitations en attente pour cette adresse
+  if (!data) {
+    const { data: rejoint } = await supabase.rpc("rejoindre_agence");
+    if (rejoint) ({ data } = await lire());
+  }
 
   if (!data) return null;
   const agences = data.agences as unknown as { nom: string } | null;
