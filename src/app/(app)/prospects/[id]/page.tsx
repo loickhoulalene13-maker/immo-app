@@ -9,6 +9,7 @@ import { marquerRelanceEnvoyee } from "../actions";
 import { genererRelance } from "../../assistant/actions";
 import { Brouillon } from "../../brouillon";
 import { iaDisponible } from "@/lib/ia";
+import { emailDisponible } from "@/lib/email";
 
 type Recherche = { id: string; budget_max: number; villes: string[]; surface_min: number | null; pieces_min: number | null; active: boolean };
 
@@ -83,6 +84,7 @@ export default async function FicheProspect({
       {ok === "cree" && <p className="notice ok">Acheteur ajouté. Les biens adaptés sont calculés automatiquement.</p>}
       {ok === "brouillon" && <p className="notice ok">Brouillon de relance prêt, plus bas.</p>}
       {ok === "envoye" && <p className="notice ok">Relance enregistrée comme envoyée. Le dernier contact est mis à jour.</p>}
+      {ok === "email" && <p className="notice ok">Relance envoyée par e-mail. Le dernier contact est mis à jour.</p>}
       {ok === "relance" && <p className="notice ok">Relance enregistrée. Le dernier contact est mis à jour et l&apos;alerte est levée.</p>}
 
       <div className="facts">
@@ -129,11 +131,12 @@ export default async function FicheProspect({
           </form>
         </div>
         {brouillonEnCours ? (
-          <Brouillon id={brouillonEnCours.id as string} texte={brouillonEnCours.texte as string} modele={brouillonEnCours.modele as string | null} creeLe={brouillonEnCours.created_at as string} retour={`/prospects/${c.id}`} champ="texte-relance" />
+          <Brouillon id={brouillonEnCours.id as string} texte={brouillonEnCours.texte as string} modele={brouillonEnCours.modele as string | null} creeLe={brouillonEnCours.created_at as string} retour={`/prospects/${c.id}`} champ="texte-relance" destinataire={c.email} nomDestinataire={c.nom} />
         ) : (
           <form action={marquerRelanceEnvoyee} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             <input type="hidden" name="contact_id" value={c.id} />
             <span className="pill p-neutral" style={{ alignSelf: "flex-start" }}>Modèle standard</span>
+            {emailDisponible() && <p className="muted" style={{ fontSize: 12.5 }}>Pour l&apos;envoyer par e-mail depuis l&apos;app, cliquez d&apos;abord sur « {ia ? "Rédiger avec l'IA" : "Préparer un brouillon"} ».</p>}
             <textarea id="texte-relance" name="texte" rows={16} defaultValue={brouillon} aria-label="Texte de la relance" />
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <CopyButton target="texte-relance" />

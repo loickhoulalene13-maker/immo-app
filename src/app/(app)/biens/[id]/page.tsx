@@ -42,7 +42,7 @@ export default async function FicheBien({
   if (!agence) redirect("/login");
   const supabase = await createClient();
 
-  const { data: b } = await supabase.from("biens").select("*, vendeur:contacts(nom)").eq("id", id).maybeSingle();
+  const { data: b } = await supabase.from("biens").select("*, vendeur:contacts(nom, email)").eq("id", id).maybeSingle();
   if (!b) notFound();
 
   const [{ data: suivi }, { data: controle }, { data: objections }, { data: visites }, { data: rappro }, { data: acheteurs }, { data: cats }, { data: stag }, { data: offres }, { data: txs }, { data: textes }] =
@@ -67,7 +67,7 @@ export default async function FicheBien({
   const vis = (visites ?? []) as unknown as Visite[];
   const motifs = (cats ?? []).map((c) => c.motif as string);
   const ach = new Map((acheteurs ?? []).map((a) => [a.id as string, a]));
-  const vendeur = b.vendeur as unknown as { nom: string } | null;
+  const vendeur = b.vendeur as unknown as { nom: string; email: string | null } | null;
   const statut = STATUT_BIEN[b.statut as string];
   const tx = (txs ?? [])[0] as { id: string; statut: string } | undefined;
   const ia = iaDisponible();
@@ -106,6 +106,7 @@ export default async function FicheBien({
       {ok === "analyse" && <p className="notice ok">Analyse IA terminée : les objections détectées sont ajoutées aux compteurs.</p>}
       {ok === "rapport" && <p className="notice ok">Compte rendu prêt, plus bas.</p>}
       {ok === "envoye" && <p className="notice ok">Compte rendu enregistré comme envoyé.</p>}
+      {ok === "email" && <p className="notice ok">Compte rendu envoyé par e-mail au vendeur.</p>}
       {ok === "offre" && <p className="notice ok">Offre enregistrée.</p>}
       {ok === "visite" && <p className="notice ok">Retour de visite enregistré. Les objections ont été analysées.</p>}
 
@@ -267,7 +268,7 @@ export default async function FicheBien({
             </form>
           </div>
           {rapport ? (
-            <Brouillon id={rapport.id} texte={rapport.texte} modele={rapport.modele} creeLe={rapport.created_at} retour={`/biens/${b.id}`} champ="texte-rapport" />
+            <Brouillon id={rapport.id} texte={rapport.texte} modele={rapport.modele} creeLe={rapport.created_at} retour={`/biens/${b.id}`} champ="texte-rapport" destinataire={vendeur?.email} nomDestinataire={vendeur?.nom} />
           ) : (
             <p className="empty">Préparez un compte rendu : activité, points appréciés, freins et recommandation, à partir des visites de ce bien{ia && analyse ? " et de la dernière analyse IA" : ""}.</p>
           )}

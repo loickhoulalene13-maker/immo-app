@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { appelIA, CONSIGNES_STYLE, iaDisponible } from "@/lib/ia";
 import { brouillonRapportVendeur, brouillonRelance, type DonneesRapport } from "@/lib/redaction";
 import { eur, typologie } from "@/lib/format";
+import { envoyerEmail, separerObjet } from "@/lib/email";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 
@@ -251,7 +252,8 @@ Termine par une question simple. 120 à 180 mots. Une ligne « Objet : … » en
 }
 
 // ---------------------------------------------------------------------
-// Marquer un brouillon comme envoyé (le contact est mis à jour par la base)
+// Brouillon envoyé : soit par e-mail depuis l'app (Resend), soit copié ailleurs.
+// Dans les deux cas le contact est mis à jour par la base (déclencheur).
 // ---------------------------------------------------------------------
 export async function marquerTexteEnvoye(formData: FormData) {
   const agence = await getAgence();
@@ -259,13 +261,35 @@ export async function marquerTexteEnvoye(formData: FormData) {
   const supabase = await createClient();
   const id = String(formData.get("texte_id"));
   const retour = String(formData.get("retour") ?? "/assistant");
-  const { error } = await supabase
-    .from("textes_ia")
-    .update({ texte: String(formData.get("texte") ?? ""), envoye_le: new Date().toISOString() })
-    .eq("id", id);
+  const texte = String(formData.get("texte") ?? "");
+  const parEmail = formData.get("mode") === "email";
+  const sep = retour.includes("?") ? "&" : "?";
+
+  const { data: t } = await supabase.from("textes_ia").select("id, type, contact_id, donnees").eq("id", id).maybeSingle();
+  if (!t) err(retour, "Brouillon introuvable.");
+
+  let donnees = (t!.donnees ?? {}) as Record<string, unknown>;
+  if (parEmail) {
+    const a = String(formData.get("destinataire") ?? "").trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(a)) err(retour, "Adresse du destinataire invalide.");
+    const defaut = t!.type === "rapport_vendeur" ? `Compte rendu de commercialisation · ${agence.nom}` : `Votre recherche immobilière · ${agence.nom}`;
+    const { objet, corps } = separerObjet(texte, defaut);
+    const r = await envoyerEmail({ a, objet, corps, repondreA: agence.email });
+    if (!r.ok) err(retour, r.erreur);
+    donnees = { ...donnees, envoi: { canal: "email", a, objet, id_resend: (r as { id: string }).id, le: new Date().toISOString() } };
+
+    // Enregistre l'adresse sur la fiche si elle n'y était pas
+    if (t!.contact_id) {
+      const { data: c } = await supabase.from("contacts").select("email").eq("id", t!.contact_id).maybeSingle();
+      if (c && !c.email) await supabase.from("contacts").update({ email: a }).eq("id", t!.contact_id);
+    }
+  } else {
+    donnees = { ...donnees, envoi: { canal: "manuel", le: new Date().toISOString() } };
+  }
+
+  const { error } = await supabase.from("textes_ia").update({ texte, envoye_le: new Date().toISOString(), donnees }).eq("id", id);
   if (error) err(retour, error.message);
   await supabase.rpc("rafraichir_alertes", { p_agence: agence.id });
   revalidatePath("/", "layout");
-  const sep = retour.includes("?") ? "&" : "?";
-  redirect(`${retour}${sep}ok=envoye`);
+  redirect(`${retour}${sep}ok=${parEmail ? "email" : "envoye"}`);
 }
