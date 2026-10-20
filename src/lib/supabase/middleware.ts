@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { supabaseEnv } from "./env";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Rafraîchit la session à chaque requête et renvoie vers /login si l'utilisateur n'est pas connecté.
+// Rafraîchit la session à chaque requête. Visiteur non connecté : / → /presentation, autres pages → /login.
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   const { url: supabaseUrl, key: supabaseKey } = supabaseEnv();
@@ -30,12 +30,13 @@ export async function updateSession(request: NextRequest) {
 
   // Pages accessibles sans être connecté
   const chemin = request.nextUrl.pathname;
-  const publique = ["/login", "/mot-de-passe-oublie", "/inscription"].includes(chemin) || chemin.startsWith("/auth/");
+  const publique = ["/login", "/mot-de-passe-oublie", "/inscription", "/presentation"].includes(chemin) || chemin.startsWith("/auth/");
   const pourVisiteurs = chemin === "/login" || chemin === "/inscription" || chemin === "/mot-de-passe-oublie";
 
   if (!user && !publique) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    // Un visiteur qui arrive sur l'accueil découvre la présentation ; ailleurs, la connexion
+    url.pathname = chemin === "/" ? "/presentation" : "/login";
     url.search = "";
     return NextResponse.redirect(url);
   }
