@@ -30,7 +30,7 @@ export async function updateSession(request: NextRequest) {
 
   // Pages accessibles sans être connecté
   const chemin = request.nextUrl.pathname;
-  const publique = ["/login", "/mot-de-passe-oublie", "/inscription", "/presentation"].includes(chemin) || chemin.startsWith("/auth/");
+  const publique = ["/login", "/mot-de-passe-oublie", "/inscription", "/presentation", "/mentions-legales", "/cgv", "/confidentialite"].includes(chemin) || chemin.startsWith("/auth/");
   const pourVisiteurs = chemin === "/login" || chemin === "/inscription" || chemin === "/mot-de-passe-oublie";
 
   if (!user && !publique) {
