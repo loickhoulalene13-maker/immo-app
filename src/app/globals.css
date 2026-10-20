@@ -35,7 +35,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 .side{position:sticky;top:0;align-self:start;padding-block:24px;display:flex;flex-direction:column;gap:24px;max-height:100vh}
 .brand{display:flex;align-items:center;gap:10px}
 .brand-mark{width:34px;height:34px;border-radius:9px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
-.brand b{font-family:var(--f-display);font-size:18px;display:block;line-height:1.1}
+.brand b{font-family:var(--f-display);font-size:19px;font-weight:400;display:block;line-height:1.1;letter-spacing:-.01em;color:var(--accent)}
+.brand b span{font-weight:800}
 .brand small{color:var(--muted);font-size:12px}
 .nav{display:flex;flex-direction:column;gap:2px}
 .nav a,.nav span.off{display:grid;grid-template-columns:20px 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-radius:8px;color:var(--muted)}
