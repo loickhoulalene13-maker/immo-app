@@ -9,8 +9,8 @@ import { annulerInvitation, changerMonNom, changerRole, inviterMembre, retirerMe
 type Membre = { user_id: string; email: string; role: "admin" | "agent"; nom_affiche: string | null; membre_depuis: string; derniere_connexion: string | null };
 type Invitation = { id: string; email: string; role: string; nom_affiche: string | null; created_at: string; expire_le: string };
 
-export default async function Equipe({ searchParams }: { searchParams: Promise<{ erreur?: string; ok?: string; invite?: string }> }) {
-  const { erreur, ok, invite } = await searchParams;
+export default async function Equipe({ searchParams }: { searchParams: Promise<{ erreur?: string; ok?: string; invite?: string; envoi?: string }> }) {
+  const { erreur, ok, invite, envoi } = await searchParams;
   const agence = await getAgence();
   if (!agence) redirect("/login");
   const supabase = await createClient();
@@ -52,7 +52,9 @@ export default async function Equipe({ searchParams }: { searchParams: Promise<{
       {invite && (
         <section className="card" style={{ borderColor: "var(--accent)" }}>
           <div className="card-h"><h2>Invitation créée pour {invite}</h2></div>
-          <p className="muted" style={{ fontSize: 13.5 }}>Envoyez-lui ce message par e-mail ou SMS. Dès qu&apos;il aura créé son compte avec cette adresse et l&apos;aura confirmée, il aura accès à l&apos;agence.</p>
+          {envoi === "ok" && <p className="notice ok">L&apos;invitation a été envoyée par e-mail à {invite}. Pensez à lui dire de regarder aussi dans ses spams.</p>}
+          {envoi && envoi !== "ok" && <p className="notice crit">L&apos;e-mail n&apos;a pas pu partir : {envoi} Vous pouvez copier le message ci-dessous et l&apos;envoyer vous-même.</p>}
+          <p className="muted" style={{ fontSize: 13.5 }}>{envoi === "ok" ? "Vous pouvez aussi lui transmettre ce message par SMS." : "Envoyez-lui ce message par e-mail ou SMS."} Dès qu&apos;il aura créé son compte avec cette adresse et l&apos;aura confirmée, il aura accès à l&apos;agence.</p>
           <textarea id="message-invitation" rows={9} readOnly defaultValue={message(invite)} aria-label="Message d'invitation" />
           <div><CopyButton target="message-invitation" label="Copier le message" /></div>
         </section>

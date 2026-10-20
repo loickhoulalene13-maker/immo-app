@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getAgence } from "@/lib/agence";
 import { createClient } from "@/lib/supabase/server";
+import { emailDisponible, envoyerEmail } from "@/lib/email";
+import { urlDuSite } from "@/lib/site";
 
 const ret = (q: string): never => redirect(`/equipe?${q}`);
 const err = (m: string): never => ret(`erreur=${encodeURIComponent(m)}`);
@@ -31,7 +33,22 @@ export async function inviterMembre(f: FormData) {
   });
   if (error) err(/invitations_en_attente|duplicate/.test(error.message) ? "Une invitation est déjà en attente pour cette adresse." : error.message);
   revalidatePath("/equipe");
-  ret(`invite=${encodeURIComponent(email)}`);
+
+  // Envoi automatique de l'invitation par e-mail (si Resend est configuré)
+  let envoi = "";
+  if (emailDisponible()) {
+    const site = await urlDuSite();
+    const lien = `${site}/inscription?email=${encodeURIComponent(email)}`;
+    const signature = agence.nomAffiche ? `${agence.nomAffiche}\n${agence.nom}` : agence.nom;
+    const r = await envoyerEmail({
+      a: email,
+      objet: `Invitation à rejoindre ${agence.nom} sur IMMO Suite`,
+      corps: `Bonjour,\n\nVous êtes invité(e) à rejoindre ${agence.nom} sur IMMO Suite, l'outil de gestion de l'agence (biens, prospects, annonces, transactions).\n\nPour accepter, créez votre compte avec cette adresse (${email}) en ouvrant ce lien :\n${lien}\n\nVous recevrez ensuite un e-mail de confirmation. Une fois votre adresse confirmée, vous aurez directement accès à l'agence.\n\nCette invitation est valable 14 jours.\n\n${signature}`,
+      repondreA: user?.email ?? null,
+    });
+    envoi = r.ok ? "&envoi=ok" : `&envoi=${encodeURIComponent(r.erreur)}`;
+  }
+  ret(`invite=${encodeURIComponent(email)}${envoi}`);
 }
 
 export async function annulerInvitation(f: FormData) {
