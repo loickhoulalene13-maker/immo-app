@@ -6,8 +6,9 @@ import { urlDuSite } from "@/lib/site";
 
 const MIN = 8;
 
-// Envoie le lien de réinitialisation. Même message que l'adresse existe ou non,
-// pour ne pas révéler quels e-mails ont un compte.
+// Envoie le lien de réinitialisation. Supabase répond pareil que l'adresse
+// existe ou non : on ne révèle donc pas quels e-mails ont un compte.
+// En revanche, si l'envoi échoue (SMTP, domaine non vérifié…), on l'affiche.
 export async function demanderReinitialisation(f: FormData) {
   const email = String(f.get("email") ?? "").trim().toLowerCase();
   if (!email) redirect("/mot-de-passe-oublie");
@@ -15,8 +16,11 @@ export async function demanderReinitialisation(f: FormData) {
   const site = await urlDuSite();
   const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${site}/auth/callback?next=/mot-de-passe` });
   if (error) {
-    console.error("[mot de passe oublié]", error.message);
-    if (/rate limit|too many/i.test(error.message)) redirect(`/mot-de-passe-oublie?erreur=${encodeURIComponent(error.message)}`);
+    console.error("[mot de passe oublié]", error.status, error.message);
+    redirect(`/mot-de-passe-oublie?erreur=${encodeURIComponent(
+      /rate limit|too many/i.test(error.message)
+        ? error.message
+        : "L'e-mail n'a pas pu être envoyé. Réessayez plus tard ou contactez l'administrateur.")}`);
   }
   redirect("/mot-de-passe-oublie?envoye=1");
 }
