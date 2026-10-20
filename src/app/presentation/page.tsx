@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LogoNom, LogoSymbole } from "../logo";
 import { demanderDemo } from "./actions";
+import { Animations } from "./animations";
 import "./presentation.css";
 
 export const metadata: Metadata = {
@@ -98,6 +99,7 @@ export default async function Presentation({ searchParams }: { searchParams: Pro
 
   return (
     <div className="lp">
+      <Animations />
       <header className="lp-top">
         <div className="lp-wrap lp-top-in">
           <Link href="/presentation" className="brand" aria-label="IMMO Suite, accueil">
@@ -126,7 +128,7 @@ export default async function Presentation({ searchParams }: { searchParams: Pro
         {/* Accroche */}
         <section className="lp-hero">
           <div className="lp-wrap lp-hero-in">
-            <div className="lp-hero-txt">
+            <div className="lp-hero-txt" data-reveal>
               <p className="lp-eyebrow">Logiciel de suivi pour agences immobilières</p>
               <h1>Ne laissez plus filer un acheteur, un mandat ou une vente.</h1>
               <p className="lp-lead">
@@ -144,7 +146,7 @@ export default async function Presentation({ searchParams }: { searchParams: Pro
             </div>
 
             {/* Aperçu stylisé du tableau de bord */}
-            <div className="lp-mock" aria-hidden="true">
+            <div className="lp-mock" aria-hidden="true" data-reveal style={{ "--d": "180ms" } as React.CSSProperties}>
               <div className="lp-mock-h">
                 <span className="lp-mock-t">Ce matin</span>
                 <span className="lp-mock-d">4 actions</span>
@@ -166,23 +168,23 @@ export default async function Presentation({ searchParams }: { searchParams: Pro
         {/* Le problème */}
         <section className="lp-sec lp-pain">
           <div className="lp-wrap">
-            <h2>Ce qui fait perdre des ventes, ce n&apos;est pas le manque de biens.</h2>
-            <div className="lp-pain-g">
+            <h2 data-reveal>Ce qui fait perdre des ventes, ce n&apos;est pas le manque de biens.</h2>
+            <div className="lp-pain-g lp-cascade" data-reveal>
               <p><b>L&apos;acheteur qu&apos;on oublie de rappeler</b> et qui signe ailleurs.</p>
               <p><b>Le bien qui stagne</b> sans qu&apos;on prévienne le vendeur à temps.</p>
               <p><b>L&apos;annonce publiée sans DPE</b> ou avec trois photos floues.</p>
               <p><b>Le compromis</b> dont une échéance passe sans que personne ne s&apos;en aperçoive.</p>
             </div>
-            <p className="lp-pain-c">IMMO Suite repère tout ça pour vous, automatiquement.</p>
+            <p className="lp-pain-c" data-reveal>IMMO Suite repère tout ça pour vous, automatiquement.</p>
           </div>
         </section>
 
         {/* Modules */}
         <section className="lp-sec" id="fonctionnalites">
           <div className="lp-wrap">
-            <p className="lp-eyebrow">Fonctionnalités</p>
-            <h2>Cinq modules, un seul outil.</h2>
-            <div className="lp-mods">
+            <p className="lp-eyebrow" data-reveal>Fonctionnalités</p>
+            <h2 data-reveal>Cinq modules, un seul outil.</h2>
+            <div className="lp-mods lp-cascade" data-reveal>
               {MODULES.map((m) => (
                 <article key={m.tag} className="lp-mod">
                   <span className="lp-tag">IMMO {m.tag}</span>
@@ -202,9 +204,9 @@ export default async function Presentation({ searchParams }: { searchParams: Pro
         {/* Parcours */}
         <section className="lp-sec lp-flow">
           <div className="lp-wrap">
-            <p className="lp-eyebrow">Concrètement</p>
-            <h2>Un bien, du mandat à la vente.</h2>
-            <ol className="lp-steps">
+            <p className="lp-eyebrow" data-reveal>Concrètement</p>
+            <h2 data-reveal>Un bien, du mandat à la vente.</h2>
+            <ol className="lp-steps lp-cascade" data-reveal>
               {ETAPES.map(([t, d], i) => (
                 <li key={t}>
                   <span className="lp-n">{i + 1}</span>
@@ -219,10 +221,10 @@ export default async function Presentation({ searchParams }: { searchParams: Pro
         {/* Tarifs */}
         <section className="lp-sec" id="tarifs">
           <div className="lp-wrap">
-            <p className="lp-eyebrow">Tarifs</p>
-            <h2>Simple, mensuel, sans engagement.</h2>
+            <p className="lp-eyebrow" data-reveal>Tarifs</p>
+            <h2 data-reveal>Simple, mensuel, sans engagement.</h2>
             <p className="lp-sub">Prix hors taxes par agence et par mois. Essai gratuit de {ESSAI}, sans carte bancaire.</p>
-            <div className="lp-prices">
+            <div className="lp-prices lp-cascade" data-reveal>
               {FORMULES.map((p) => (
                 <article key={p.nom} className={`lp-price${p.vedette ? " vedette" : ""}`}>
                   {p.vedette && <span className="lp-badge">Le plus choisi</span>}
@@ -253,7 +255,7 @@ export default async function Presentation({ searchParams }: { searchParams: Pro
               <p className="lp-eyebrow">Questions fréquentes</p>
               <h2>Ce qu&apos;on nous demande souvent.</h2>
             </div>
-            <div className="lp-faq">
+            <div className="lp-faq" data-reveal>
               {FAQ.map(([q, r]) => (
                 <details key={q}>
                   <summary>{q}</summary>
@@ -267,7 +269,7 @@ export default async function Presentation({ searchParams }: { searchParams: Pro
         {/* Démo */}
         <section className="lp-sec lp-demo" id="demo">
           <div className="lp-wrap lp-demo-in">
-            <div className="lp-demo-txt">
+            <div className="lp-demo-txt" data-reveal>
               <h2>Voyez IMMO Suite avec vos propres biens.</h2>
               <p>
                 Une démo de 20 minutes en visio, sur vos cas réels. Ensuite, si ça vous convient, votre agence est prête dans la journée.
@@ -277,7 +279,7 @@ export default async function Presentation({ searchParams }: { searchParams: Pro
               </p>
             </div>
 
-            <div className="card lp-form-card">
+            <div className="card lp-form-card" data-reveal style={{ "--d": "150ms" } as React.CSSProperties}>
               {demo === "ok" ? (
                 <div className="lp-merci">
                   <h3>Merci, c&apos;est noté !</h3>

@@ -139,3 +139,49 @@
   .lp-pain-g,.lp-mods,.lp-prices,.lp-steps,.lp-2{grid-template-columns:1fr}
   .lp-ctas .btn{flex:1 1 100%}
 }
+
+/* ——— Fluidité : défilement, apparitions, survols ——— */
+html:has(.lp){scroll-behavior:smooth}
+.lp section[id]{scroll-margin-top:72px}
+.lp-top{transition:box-shadow .3s ease,background-color .3s ease}
+.lp-top.defile{box-shadow:0 6px 24px rgba(20,40,40,.08)}
+.lp .btn{transition:transform .18s ease,box-shadow .18s ease,filter .18s ease,border-color .18s ease}
+.lp .btn:hover{transform:translateY(-1px)}
+.lp .btn.primary:hover{box-shadow:0 8px 20px rgba(29,90,85,.25)}
+.lp .btn:active{transform:translateY(0)}
+.lp-nav a,.lp-link{transition:color .2s ease}
+.lp-mod,.lp-price{transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease}
+.lp-mod:hover,.lp-price:hover{transform:translateY(-4px);box-shadow:0 18px 40px rgba(20,60,55,.10)}
+.lp-mod:hover{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}
+.lp-price.vedette:hover{box-shadow:0 26px 60px rgba(20,60,55,.18)}
+.lp-faq p{animation:lp-ouvre .3s ease}
+@keyframes lp-ouvre{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* Apparitions au défilement (activées seulement si le JavaScript tourne) */
+.lp-anime [data-reveal]{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.7,.2,1) var(--d,0ms),transform .7s cubic-bezier(.2,.7,.2,1) var(--d,0ms)}
+.lp-anime [data-reveal].vu{opacity:1;transform:none}
+.lp-anime .lp-mock[data-reveal]{transform:translateY(28px) rotate(2.5deg)}
+.lp-anime .lp-mock[data-reveal].vu{transform:rotate(1deg)}
+/* Cascade : les cartes d'un groupe arrivent l'une après l'autre */
+.lp-anime .lp-cascade[data-reveal]{opacity:1;transform:none}
+.lp-anime .lp-cascade > *{opacity:0;transform:translateY(18px);transition:opacity .6s cubic-bezier(.2,.7,.2,1),transform .6s cubic-bezier(.2,.7,.2,1)}
+.lp-anime .lp-cascade.vu > *{opacity:1;transform:none}
+.lp-anime .lp-cascade.vu > *:nth-child(2){transition-delay:80ms}
+.lp-anime .lp-cascade.vu > *:nth-child(3){transition-delay:160ms}
+.lp-anime .lp-cascade.vu > *:nth-child(4){transition-delay:240ms}
+.lp-anime .lp-cascade.vu > *:nth-child(5){transition-delay:320ms}
+.lp-anime .lp-cascade.vu > *:nth-child(6){transition-delay:400ms}
+/* Après l'apparition, le survol reprend sa vitesse normale */
+.lp-anime .lp-cascade.vu > .lp-mod:hover,.lp-anime .lp-cascade.vu > .lp-price:hover{transition-delay:0ms}
+
+/* Le point des alertes « respire » doucement dans l'aperçu */
+.lp-mock-l i.crit{animation:lp-pulse 2.4s ease-in-out infinite}
+@keyframes lp-pulse{0%,100%{box-shadow:0 0 0 0 rgba(172,51,40,.35)}50%{box-shadow:0 0 0 6px rgba(172,51,40,0)}}
+
+@media (max-width:900px){
+  .lp-anime .lp-mock[data-reveal],.lp-anime .lp-mock[data-reveal].vu{transform:none}
+}
+@media (prefers-reduced-motion: reduce){
+  html:has(.lp){scroll-behavior:auto}
+  .lp *,.lp *::before,.lp *::after{animation:none!important;transition:none!important}
+}
