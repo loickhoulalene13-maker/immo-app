@@ -4,11 +4,11 @@
 export const EDITEUR = {
   marque: "IMMO Suite",
   nomCommercial: "All Connect",
-  responsable: "Loïc Khoulalene",
+  responsable: "Loïc ",
   statut: "Entrepreneur individuel (micro-entreprise)",
-  siret: "À COMPLÉTER (14 chiffres)",
-  adresse: "À COMPLÉTER (adresse postale ou de domiciliation)",
-  villeTribunal: "À COMPLÉTER (ville de votre adresse, ex. Marseille)",
+  siret: "10339899600019",
+  adresse: "(13480 Cabries)",
+  villeTribunal: "(Aix-en-Provence)",
   email: "contact@allconnect-pro.com",
   telephone: "", // facultatif : laissez vide pour ne pas l'afficher
   tva: "TVA non applicable, article 293 B du Code général des impôts",
