@@ -122,7 +122,7 @@ export default function CGV() {
 
       <h2>18. Droit applicable et litiges</h2>
       <p>
-        Les CGV sont soumises au droit français. En cas de différend, les parties recherchent d&apos;abord une solution amiable. À défaut d&apos;accord dans un délai de 30 jours, le litige sera porté devant les tribunaux compétents du ressort de {e.villeTribunal}.
+        Les CGV sont soumises au droit français. En cas de différend, les parties recherchent d&apos;abord une solution amiable. À défaut d&apos;accord dans un délai de 30 jours, le litige sera porté devant les tribunaux compétents d&apos;{e.villeTribunal}.
       </p>
 
       <h2 id="annexe">Annexe : accord de sous-traitance des données (article 28 du RGPD)</h2>
