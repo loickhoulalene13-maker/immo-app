@@ -4,7 +4,7 @@
 export const EDITEUR = {
   marque: "IMMO Suite",
   nomCommercial: "All Connect",
-  responsable: "Loïc ",
+  responsable: "Loïc Khoulalene",
   statut: "Entrepreneur individuel (micro-entreprise)",
   siret: "10339899600019",
   adresse: "(13480 Cabries)",
@@ -12,7 +12,7 @@ export const EDITEUR = {
   email: "contact@allconnect-pro.com",
   telephone: "", // facultatif : laissez vide pour ne pas l'afficher
   tva: "TVA non applicable, article 293 B du Code général des impôts",
-  site: "https://immo-app-flax.vercel.app",
+  site: "https://immo.allconnect-pro.com",
 };
 
 // Date de dernière mise à jour des documents (à changer quand vous les modifiez)
