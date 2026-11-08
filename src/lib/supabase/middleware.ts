@@ -4,6 +4,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 // Rafraîchit la session à chaque requête. Visiteur non connecté : / → /presentation, autres pages → /login.
 export async function updateSession(request: NextRequest) {
+  // Chemin demandé, transmis aux pages (utile pour l'écran « essai terminé »)
+  request.headers.set("x-chemin", request.nextUrl.pathname);
   let response = NextResponse.next({ request });
   const { url: supabaseUrl, key: supabaseKey } = supabaseEnv();
 
@@ -30,7 +32,7 @@ export async function updateSession(request: NextRequest) {
 
   // Pages accessibles sans être connecté
   const chemin = request.nextUrl.pathname;
-  const publique = ["/login", "/mot-de-passe-oublie", "/inscription", "/presentation", "/mentions-legales", "/cgv", "/confidentialite"].includes(chemin) || chemin.startsWith("/auth/");
+  const publique = ["/login", "/mot-de-passe-oublie", "/inscription", "/presentation", "/mentions-legales", "/cgv", "/confidentialite"].includes(chemin) || chemin.startsWith("/auth/") || chemin.startsWith("/api/stripe/");
   const pourVisiteurs = chemin === "/login" || chemin === "/inscription" || chemin === "/mot-de-passe-oublie";
 
   if (!user && !publique) {

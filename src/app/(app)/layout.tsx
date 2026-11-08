@@ -6,6 +6,10 @@ import { Nav } from "./nav";
 import { creerMonAgence } from "./equipe/actions";
 import Link from "next/link";
 import { LogoNom, LogoSymbole } from "../logo";
+import { headers } from "next/headers";
+import { etatAcces, getAbonnement } from "@/lib/abonnement";
+import { stripeDisponible } from "@/lib/stripe";
+import { PanneauAbonnement } from "./abonnement/panneau";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -48,6 +52,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   ]);
   const retards = (txRetard ?? []).reduce((s, t) => s + Number(t.etapes_en_retard ?? 0), 0);
 
+  // Essai gratuit et abonnement
+  const etat = etatAcces(await getAbonnement(agence.id));
+  const chemin = (await headers()).get("x-chemin") ?? "";
+  const estAdmin = agence.role === "admin";
+  const bloque = !etat.acces && chemin !== "/abonnement";
+
   return (
     <div className="app">
       <nav className="side" aria-label="Navigation principale">
@@ -59,11 +69,39 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <div className="side-foot">
           <span>{agence.nomAffiche ?? agence.email}</span>
           <Link className="linkbtn" href="/equipe">Équipe{agence.role === "admin" ? " et invitations" : ""}</Link>
+          <Link className="linkbtn" href="/abonnement">Abonnement</Link>
           <Link className="linkbtn" href="/mot-de-passe">Changer le mot de passe</Link>
           <form action={deconnexion}><button className="linkbtn" type="submit">Se déconnecter</button></form>
         </div>
       </nav>
-      <main>{children}</main>
+      <main>
+        {etat.type === "essai" && etat.joursRestants <= 10 && chemin !== "/abonnement" && (
+          <div className="bandeau-essai">
+            <span>Essai gratuit : {etat.joursRestants} jour{etat.joursRestants > 1 ? "s" : ""} restant{etat.joursRestants > 1 ? "s" : ""}.</span>
+            {estAdmin && <Link href="/abonnement">Choisir une formule</Link>}
+          </div>
+        )}
+        {etat.type === "impaye" && chemin !== "/abonnement" && (
+          <div className="bandeau-essai crit">
+            <span>Le dernier paiement a échoué.</span>
+            {estAdmin && <Link href="/abonnement">Mettre à jour la carte</Link>}
+          </div>
+        )}
+        {bloque ? (
+          <>
+            <header className="vh">
+              <div className="t">
+                <p className="eyebrow">{agence.nom}</p>
+                <h1>{etat.ligne?.statut === "canceled" ? "Abonnement terminé" : "Votre essai gratuit est terminé"}</h1>
+                <p className="sub">Vos biens, prospects et transactions sont conservés. Choisissez une formule pour continuer.</p>
+              </div>
+            </header>
+            <PanneauAbonnement etat={etat} estAdmin={estAdmin} paiementActif={stripeDisponible()} />
+          </>
+        ) : (
+          children
+        )}
+      </main>
     </div>
   );
 }
